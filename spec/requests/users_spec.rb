@@ -5,7 +5,7 @@ RSpec.describe "Users Requests", type: :request do
   describe "GET #show" do
   	before(:each) do
   		@user = FactoryGirl.create :user
-  		get user_path(id: @user.id)
+  		get user_path(id: @user.id), nil, { "Authorization": @user.auth_token }
   	end
 
     it "respond with http status 200" do
