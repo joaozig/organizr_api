@@ -13,8 +13,7 @@ RSpec.describe "Users Requests", type: :request do
     end
 
     it "returns the user on a hash" do
-    	user_response = jsonParseResponse(response)
-    	expect(user_response[:email]).to eq(@user.email)
+    	expect(json_response[:email]).to eq(@user.email)
     end
   end
 
@@ -30,8 +29,7 @@ RSpec.describe "Users Requests", type: :request do
       end
 
       it "returns the created user on a hash" do
-        user_response = jsonParseResponse(response)
-        expect(user_response[:email]).to eq(@user_attributes[:email])
+        expect(json_response[:email]).to eq(@user_attributes[:email])
       end
     end
 
@@ -46,13 +44,11 @@ RSpec.describe "Users Requests", type: :request do
       end
 
       it "returns a json with errors" do
-        user_response = jsonParseResponse(response)
-        expect(user_response).to have_key(:errors)
+        expect(json_response).to have_key(:errors)
       end
 
       it "returns why the user could not be created" do
-        user_response = jsonParseResponse(response)
-        expect(user_response[:errors][:email]).to include("can't be blank")
+        expect(json_response[:errors][:email]).to include("can't be blank")
       end
     end
   end
@@ -69,8 +65,7 @@ RSpec.describe "Users Requests", type: :request do
       end
 
       it "returns the updated user on a hash" do
-        user_response = jsonParseResponse(response)
-        expect(user_response[:email]).to eq("new@email.com")
+        expect(json_response[:email]).to eq("new@email.com")
       end
     end
 
@@ -85,13 +80,11 @@ RSpec.describe "Users Requests", type: :request do
       end
 
       it "returns a json with errors" do
-        user_response = jsonParseResponse(response)
-        expect(user_response).to have_key(:errors)
+        expect(json_response).to have_key(:errors)
       end
 
       it "returns why the user could not be updated" do
-        user_response = jsonParseResponse(response)
-        expect(user_response[:errors][:email]).to include("is invalid")
+        expect(json_response[:errors][:email]).to include("is invalid")
       end
     end
   end
@@ -106,8 +99,4 @@ RSpec.describe "Users Requests", type: :request do
       expect(response).to have_http_status(:no_content)
     end
   end
-end
-
-def jsonParseResponse(response)
-  JSON.parse(response.body, symbolize_names: true)
 end

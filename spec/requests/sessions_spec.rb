@@ -19,8 +19,7 @@ RSpec.describe "Sessions Requests", type: :request do
 
 			it "returns the user record corresponding to the given credentials" do
 				@user.reload
-				session_response = jsonParseResponse(response)
-				expect(session_response[:auth_token]).to eq(@user.auth_token)
+				expect(json_response[:auth_token]).to eq(@user.auth_token)
 			end
 		end
 
@@ -35,8 +34,7 @@ RSpec.describe "Sessions Requests", type: :request do
 			end
 
 			it "returns a json with an error" do
-				session_response = jsonParseResponse(response)
-				expect(session_response[:errors]). to eq("Invalid email or password")
+				expect(json_response[:errors]). to eq("Invalid email or password")
 			end
 		end
 	end
@@ -46,16 +44,11 @@ RSpec.describe "Sessions Requests", type: :request do
 			@user = FactoryGirl.create :user
 			credentials = { email: @user.email, password: @user.password }
 			post sessions_path, { session: credentials }
-			session_response = jsonParseResponse(response)
-			delete session_path(session_response[:auth_token])
+			delete session_path(json_response[:auth_token])
 		end
 
 		it "respond with http status 204" do
 			expect(response).to have_http_status(:no_content)
 		end
 	end
-end
-
-def jsonParseResponse(response)
-  JSON.parse(response.body, symbolize_names: true)
 end
