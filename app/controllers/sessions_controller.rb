@@ -15,4 +15,15 @@ class SessionsController < ApplicationController
 			render json: { errors: "Invalid email or password" }, status: :unprocessable_entity
 		end
 	end
+
+	# DELETE /sessions/:id
+	def destroy
+		if user = User.find_by(auth_token: params[:id])
+			user.generate_authentication_token!
+			user.save
+			head :no_content
+		else
+			render json: { errors: "User not found" }, status: :unprocessable_entity
+		end
+	end
 end

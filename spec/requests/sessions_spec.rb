@@ -40,6 +40,20 @@ RSpec.describe "Sessions Requests", type: :request do
 			end
 		end
 	end
+
+	describe "DELETE #destroy" do
+		before(:each) do
+			@user = FactoryGirl.create :user
+			credentials = { email: @user.email, password: @user.password }
+			post sessions_path, { session: credentials }
+			session_response = jsonParseResponse(response)
+			delete session_path(session_response[:auth_token])
+		end
+
+		it "respond with http status 204" do
+			expect(response).to have_http_status(:no_content)
+		end
+	end
 end
 
 def jsonParseResponse(response)
