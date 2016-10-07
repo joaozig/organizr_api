@@ -1,0 +1,47 @@
+require 'rails_helper'
+
+RSpec.describe "Sessions Requests", type: :request do
+
+	describe "POST #create" do
+		before(:each) do
+			@user = FactoryGirl.create :user
+		end
+
+		context "when the credentials are correct" do
+			before(:each) do
+				credentials = { email: @user.email, password: "123456" }
+				post sessions_path, { session: credentials }
+			end
+
+			it "respond with http status 200" do
+				expect(response).to have_http_status(:ok)
+			end
+
+			it "returns the user record corresponding to the given credentials" do
+				@user.reload
+				session_response = jsonParseResponse(response)
+				expect(session_response[:auth_token]).to eq(@user.auth_token)
+			end
+		end
+
+		context "when the credentials are incorrect" do
+			before(:each) do
+				credentials = { email: @user.email, password: "invalidPassword" }
+				post sessions_path, { session: credentials }
+			end
+
+			it "respond with http status 422" do
+				expect(response).to have_http_status(:unprocessable_entity)
+			end
+
+			it "returns a json with an error" do
+				session_response = jsonParseResponse(response)
+				expect(session_response[:errors]). to eq("Invalid email or password")
+			end
+		end
+	end
+end
+
+def jsonParseResponse(response)
+  JSON.parse(response.body, symbolize_names: true)
+end
