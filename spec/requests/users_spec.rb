@@ -95,4 +95,15 @@ RSpec.describe "Users Requests", type: :request do
       end
     end
   end
+
+  describe "DELETE #destroy" do
+    before(:each) do
+      @user = FactoryGirl.create :user
+      delete user_path(@user.id)
+    end
+
+    it "respond with http status 204" do
+      expect(response).to have_http_status(204)
+    end
+  end
 end
