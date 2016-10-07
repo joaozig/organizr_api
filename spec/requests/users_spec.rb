@@ -14,8 +14,46 @@ RSpec.describe "Users", type: :request do
 
     it "returns the user on a hash" do
     	user_response = JSON.parse(response.body, symbolize_names: true)
-    	expect(user_response[:email]).to eql(@user.email)
+    	expect(user_response[:email]).to eq(@user.email)
     end
   end
 
+  describe "POST #create" do
+    context "when is successfully created" do
+      before(:each) do
+        @user_attributes = FactoryGirl.attributes_for :user
+        post users_path, { user: @user_attributes }
+      end
+
+      it "respond with http status 201" do
+        expect(response).to have_http_status(201)
+      end
+
+      it "returns the created user on a hash" do
+        user_response = JSON.parse(response.body, symbolize_names: true)
+        expect(user_response[:email]).to eq(@user_attributes[:email])
+      end
+    end
+
+    context "when is not created" do
+      before(:each) do
+        @invalid_user_attributes = { password: "123456", password_confirmation: "123456" }
+        post users_path, { user: @invalid_user_attributes }
+      end
+
+      it "respond with http status 422" do
+        expect(response).to have_http_status(422)
+      end
+
+      it "returns a json with errors" do
+        user_response = JSON.parse(response.body, symbolize_names: true)
+        expect(user_response).to have_key(:errors)
+      end
+
+      it "returns why the user could not be created" do
+        user_response = JSON.parse(response.body, symbolize_names: true)
+        expect(user_response[:errors][:email]).to include("can't be blank")
+      end
+    end
+  end
 end
