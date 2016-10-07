@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe "Users", type: :request do
+RSpec.describe "Users Requests", type: :request do
 
   describe "GET #show" do
   	before(:each) do
@@ -53,6 +53,45 @@ RSpec.describe "Users", type: :request do
       it "returns why the user could not be created" do
         user_response = JSON.parse(response.body, symbolize_names: true)
         expect(user_response[:errors][:email]).to include("can't be blank")
+      end
+    end
+  end
+
+  describe "PATCH #update" do
+    context "when is successfully updated" do
+      before(:each) do
+        @user = FactoryGirl.create :user
+        patch user_path(id: @user.id), { user: { email: "new@email.com" } }
+      end
+
+      it "respond with http status 200" do
+        expect(response).to have_http_status(200)
+      end
+
+      it "returns the updated user on a hash" do
+        user_response = JSON.parse(response.body, symbolize_names: true)
+        expect(user_response[:email]).to eq("new@email.com")
+      end
+    end
+
+    context "when is not updated" do
+      before(:each) do
+        @user = FactoryGirl.create :user
+        patch user_path(id: @user.id), {user: { email: "bademail.com" } }
+      end
+
+      it "respond with http status 422" do
+        expect(response).to have_http_status(422)
+      end
+
+      it "returns a json with errors" do
+        user_response = JSON.parse(response.body, symbolize_names: true)
+        expect(user_response).to have_key(:errors)
+      end
+
+      it "returns why the user could not be updated" do
+        user_response = JSON.parse(response.body, symbolize_names: true)
+        expect(user_response[:errors][:email]).to include("is invalid")
       end
     end
   end
