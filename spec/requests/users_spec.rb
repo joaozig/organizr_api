@@ -9,11 +9,11 @@ RSpec.describe "Users Requests", type: :request do
   	end
 
     it "respond with http status 200" do
-      expect(response).to have_http_status(200)
+      expect(response).to have_http_status(:ok)
     end
 
     it "returns the user on a hash" do
-    	user_response = JSON.parse(response.body, symbolize_names: true)
+    	user_response = jsonParseResponse(response)
     	expect(user_response[:email]).to eq(@user.email)
     end
   end
@@ -26,11 +26,11 @@ RSpec.describe "Users Requests", type: :request do
       end
 
       it "respond with http status 201" do
-        expect(response).to have_http_status(201)
+        expect(response).to have_http_status(:created)
       end
 
       it "returns the created user on a hash" do
-        user_response = JSON.parse(response.body, symbolize_names: true)
+        user_response = jsonParseResponse(response)
         expect(user_response[:email]).to eq(@user_attributes[:email])
       end
     end
@@ -42,16 +42,16 @@ RSpec.describe "Users Requests", type: :request do
       end
 
       it "respond with http status 422" do
-        expect(response).to have_http_status(422)
+        expect(response).to have_http_status(:unprocessable_entity)
       end
 
       it "returns a json with errors" do
-        user_response = JSON.parse(response.body, symbolize_names: true)
+        user_response = jsonParseResponse(response)
         expect(user_response).to have_key(:errors)
       end
 
       it "returns why the user could not be created" do
-        user_response = JSON.parse(response.body, symbolize_names: true)
+        user_response = jsonParseResponse(response)
         expect(user_response[:errors][:email]).to include("can't be blank")
       end
     end
@@ -65,11 +65,11 @@ RSpec.describe "Users Requests", type: :request do
       end
 
       it "respond with http status 200" do
-        expect(response).to have_http_status(200)
+        expect(response).to have_http_status(:ok)
       end
 
       it "returns the updated user on a hash" do
-        user_response = JSON.parse(response.body, symbolize_names: true)
+        user_response = jsonParseResponse(response)
         expect(user_response[:email]).to eq("new@email.com")
       end
     end
@@ -81,16 +81,16 @@ RSpec.describe "Users Requests", type: :request do
       end
 
       it "respond with http status 422" do
-        expect(response).to have_http_status(422)
+        expect(response).to have_http_status(:unprocessable_entity)
       end
 
       it "returns a json with errors" do
-        user_response = JSON.parse(response.body, symbolize_names: true)
+        user_response = jsonParseResponse(response)
         expect(user_response).to have_key(:errors)
       end
 
       it "returns why the user could not be updated" do
-        user_response = JSON.parse(response.body, symbolize_names: true)
+        user_response = jsonParseResponse(response)
         expect(user_response[:errors][:email]).to include("is invalid")
       end
     end
@@ -103,7 +103,11 @@ RSpec.describe "Users Requests", type: :request do
     end
 
     it "respond with http status 204" do
-      expect(response).to have_http_status(204)
+      expect(response).to have_http_status(:no_content)
     end
   end
+end
+
+def jsonParseResponse(response)
+  JSON.parse(response.body, symbolize_names: true)
 end
