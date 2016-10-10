@@ -25,7 +25,7 @@ RSpec.describe "Sessions Requests", type: :request do
 
 		context "when the credentials are incorrect" do
 			before(:each) do
-				credentials = { email: @user.email, password: "invalidPassword" }
+				credentials = { email: "invalid e-mail", password: "invalidPassword" }
 				post sessions_path, { session: credentials }
 			end
 
