@@ -1,4 +1,5 @@
 class User < ActiveRecord::Base
+  has_many :lists
 	validates :auth_token, uniqueness: true
 	before_create :generate_authentication_token!
 
