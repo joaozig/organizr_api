@@ -1,5 +1,6 @@
 class ListsController < ApplicationController
 	before_action :authenticate_with_token!
+	before_action :set_list, only: [:update]
 
 	# GET /lists
   def index
@@ -18,7 +19,24 @@ class ListsController < ApplicationController
   	end
   end
 
+  # PATCH/PUT /lists/:id
+  def update
+		if @list.update(list_params)
+			render json: @list
+		else
+			render json: { errors: @list.errors }, status: :unprocessable_entity
+		end
+  end
+
   private
+
+  	def set_list
+  		begin
+  			@list = @authentication.current_user.lists.find(params[:id])
+  		rescue
+  			render json: { errors: "not found" }, status: :unprocessable_entity
+  		end
+  	end
 
   	def list_params
   		params.require(:list).permit(:title)

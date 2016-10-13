@@ -16,6 +16,13 @@ RSpec.describe "Lists Requests", type: :request do
         expect(response).to have_http_status(:unauthorized)
       end
     end
+
+    describe "PATCH #update" do
+      it "responds with http status 401" do
+        patch list_path(1)
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
   end
 
   context "When signed in" do
@@ -78,6 +85,66 @@ RSpec.describe "Lists Requests", type: :request do
 
         it "returns why the list could not be created" do
           expect(json_response[:errors][:title]).to include("can't be blank")
+        end
+      end
+    end
+
+    describe "PATCH #update" do
+      before(:each) do
+        @list = FactoryGirl.create(:list, { user: @user } )
+      end
+
+      context "when is successfully updated" do
+        before(:each) do
+          patch list_path(@list.id), { list: { title: "Updated title" } }, @authentication_header
+        end
+
+        it "respond with http status 200" do
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "returns the updated list on a hash" do
+          expect(json_response[:title]).to eq("Updated title")
+        end
+      end
+
+      context "when is not updated" do
+        context "because validation failed" do
+          before(:each) do
+            patch list_path(@list.id), { list: { title: "" } }, @authentication_header
+          end
+
+          it "respond with http status 422" do
+            expect(response).to have_http_status(:unprocessable_entity)
+          end
+
+          it "returns a json with errors" do
+            expect(json_response).to have_key(:errors)
+          end
+
+          it "returns why the list could not be updated" do
+            expect(json_response[:errors][:title]).to include("can't be blank")
+          end
+        end
+
+        context "because tried to update a list from another user" do
+          before(:each) do
+            @another_user = FactoryGirl.create(:user, email: "another@user.com")
+            @another_list = FactoryGirl.create(:list, user: @another_user)
+            patch list_path(@another_list.id), { list: { title: "Valid title" } }, @authentication_header
+          end
+
+          it "respond with http status 422" do
+            expect(response).to have_http_status(:unprocessable_entity)
+          end
+
+          it "returns a json with errors" do
+            expect(json_response).to have_key(:errors)
+          end
+
+          it "returns Not Found error message" do
+            expect(json_response[:errors]).to include("not found")
+          end
         end
       end
     end
