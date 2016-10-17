@@ -1,6 +1,6 @@
 class ListsController < ApplicationController
 	before_action :authenticate_with_token!
-	before_action :set_list, only: [:update]
+	before_action :set_list, only: [:update, :destroy]
 
 	# GET /lists
   def index
@@ -26,6 +26,15 @@ class ListsController < ApplicationController
 		else
 			render json: { errors: @list.errors }, status: :unprocessable_entity
 		end
+  end
+
+  # DELETE /lists/:id
+  def destroy
+  	if @list.destroy
+  		head :no_content
+  	else
+  		render json: { errors: "cannot delete list" }, status: :unprocessable_entity
+  	end
   end
 
   private

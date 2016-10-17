@@ -23,6 +23,13 @@ RSpec.describe "Lists Requests", type: :request do
         expect(response).to have_http_status(:unauthorized)
       end
     end
+
+    describe "DELETE #destroy" do
+      it "responds with http status 401" do
+        delete list_path(1)
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
   end
 
   context "When signed in" do
@@ -132,6 +139,41 @@ RSpec.describe "Lists Requests", type: :request do
             @another_user = FactoryGirl.create(:user, email: "another@user.com")
             @another_list = FactoryGirl.create(:list, user: @another_user)
             patch list_path(@another_list.id), { list: { title: "Valid title" } }, @authentication_header
+          end
+
+          it "respond with http status 422" do
+            expect(response).to have_http_status(:unprocessable_entity)
+          end
+
+          it "returns a json with errors" do
+            expect(json_response).to have_key(:errors)
+          end
+
+          it "returns Not Found error message" do
+            expect(json_response[:errors]).to include("not found")
+          end
+        end
+      end
+    end
+
+    describe "DELETE #destroy" do
+      before(:each) do
+        @list = FactoryGirl.create(:list, user: @user)
+      end
+
+      context "when is successfully deleted" do
+        it "respond with http status 204" do
+          delete list_path(@list.id), nil, @authentication_header
+          expect(response).to have_http_status(:no_content)
+        end
+      end
+
+      context "when is not deleted" do
+        context "because tried to delete a list from another user" do
+          before(:each) do
+              @another_user = FactoryGirl.create(:user, email: "another@user.com")
+              @another_list = FactoryGirl.create(:list, user: @another_user)
+              delete list_path(@another_list.id), nil, @authentication_header
           end
 
           it "respond with http status 422" do
