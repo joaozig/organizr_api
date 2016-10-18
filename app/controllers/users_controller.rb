@@ -1,4 +1,5 @@
 class UsersController < ApplicationController
+	before_action :authenticate_with_token!, except: [:create]
 	before_action :set_user, only: [:show, :update, :destroy]
 
 	# GET /users/:id
