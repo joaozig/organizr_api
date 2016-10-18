@@ -176,16 +176,16 @@ RSpec.describe "Lists Requests", type: :request do
               delete list_path(@another_list.id), nil, @authentication_header
           end
 
-          it "respond with http status 422" do
-            expect(response).to have_http_status(:unprocessable_entity)
+          it "respond with http status 401" do
+            expect(response).to have_http_status(:unauthorized)
           end
 
           it "returns a json with errors" do
             expect(json_response).to have_key(:errors)
           end
 
-          it "returns Not Found error message" do
-            expect(json_response[:errors]).to include("not found")
+          it "returns Permission Denied error message" do
+            expect(json_response[:errors]).to include("Permission denied")
           end
         end
       end

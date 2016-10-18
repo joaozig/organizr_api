@@ -30,6 +30,7 @@ class ListsController < ApplicationController
 
   # DELETE /lists/:id
   def destroy
+    authorize @list, :destroy?
   	if @list.destroy
   		head :no_content
   	else
@@ -39,15 +40,11 @@ class ListsController < ApplicationController
 
   private
 
-  	def set_list
-  		begin
-  			@list = @authentication.current_user.lists.find(params[:id])
-  		rescue
-  			render json: { errors: "not found" }, status: :unprocessable_entity
-  		end
-  	end
+	def set_list
+      @list = List.find(params[:id])
+	end
 
-  	def list_params
-  		params.require(:list).permit(:title)
-  	end
+	def list_params
+		params.require(:list).permit(:title)
+	end
 end
