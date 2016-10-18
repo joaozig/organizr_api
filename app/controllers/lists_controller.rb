@@ -21,6 +21,7 @@ class ListsController < ApplicationController
 
   # PATCH/PUT /lists/:id
   def update
+    authorize @list, :update?
 		if @list.update(list_params)
 			render json: @list
 		else

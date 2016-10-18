@@ -6,6 +6,10 @@ class ListPolicy
 		@list = list
 	end
 
+	def update?
+		owner?
+	end
+
 	def destroy?
 		owner?
 	end
