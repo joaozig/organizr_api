@@ -17,6 +17,6 @@ class ListPolicy
 	private
 
 	def owner?
-		list.user == user
+		list.user.id == user.id
 	end
 end
