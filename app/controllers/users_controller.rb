@@ -4,6 +4,8 @@ class UsersController < ApplicationController
 
 	# GET /users/:id
 	def show
+		authorize @user, :show?
+
 		render json: @user
 	end
 

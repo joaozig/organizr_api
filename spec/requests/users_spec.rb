@@ -68,16 +68,29 @@ RSpec.describe "Users Requests", type: :request do
     end
 
     describe "GET #show" do
-      before(:each) do
-        get user_path(id: @user.id), nil, @authentication_header
+      context "when is own user" do
+        before(:each) do
+          get user_path(id: @user.id), nil, @authentication_header
+        end
+
+        it "respond with http status 200" do
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "returns the user on a hash" do
+          expect(json_response[:email]).to eq(@user.email)
+        end
       end
 
-      it "respond with http status 200" do
-        expect(response).to have_http_status(:ok)
-      end
+      context "when is not own user" do
+        before(:each) do
+          @another_user = FactoryGirl.create(:user, email: 'other@email.com')
+          get user_path(id: @another_user.id), nil, @authentication_header
+        end
 
-      it "returns the user on a hash" do
-        expect(json_response[:email]).to eq(@user.email)
+        it "respond with http status 401" do
+          expect(response).to have_http_status(:unauthorized)
+        end
       end
     end
 
