@@ -142,12 +142,25 @@ RSpec.describe "Users Requests", type: :request do
     end
 
     describe "DELETE #destroy" do
-      before(:each) do
-        delete user_path(@user.id), nil, @authentication_header
+      context "when is own user" do
+        before(:each) do
+          delete user_path(@user.id), nil, @authentication_header
+        end
+
+        it "respond with http status 204" do
+          expect(response).to have_http_status(:no_content)
+        end
       end
 
-      it "respond with http status 204" do
-        expect(response).to have_http_status(:no_content)
+      context "when is not own user" do
+        before(:each) do
+          @another_user = FactoryGirl.create(:user, email: 'other@email.com')
+          delete user_path(@another_user.id), nil, @authentication_header
+        end
+
+        it "respond with http status 401" do
+          expect(response).to have_http_status(:unauthorized)
+        end
       end
     end
   end

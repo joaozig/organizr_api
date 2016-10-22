@@ -32,6 +32,8 @@ class UsersController < ApplicationController
 
 	# DELETE /users/:id
 	def destroy
+		authorize @user, :destroy?
+
 		@user.destroy
 
 		head :no_content

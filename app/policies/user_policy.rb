@@ -14,6 +14,10 @@ class UserPolicy
 		self?
 	end
 
+	def destroy?
+		self?
+	end
+
 	private
 
 	def self?
