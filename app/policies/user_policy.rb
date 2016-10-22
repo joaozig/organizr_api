@@ -10,6 +10,10 @@ class UserPolicy
 		self?
 	end
 
+	def update?
+		self?
+	end
+
 	private
 
 	def self?

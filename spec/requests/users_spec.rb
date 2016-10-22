@@ -95,35 +95,48 @@ RSpec.describe "Users Requests", type: :request do
     end
 
     describe "PATCH #update" do
-      context "when is successfully updated" do
-        before(:each) do
-          patch user_path(id: @user.id), { user: { email: "new@email.com" } }, @authentication_header
+      context "when is own user" do
+        context "when is successfully updated" do
+          before(:each) do
+            patch user_path(id: @user.id), { user: { email: "new@email.com" } }, @authentication_header
+          end
+
+          it "respond with http status 200" do
+            expect(response).to have_http_status(:ok)
+          end
+
+          it "returns the updated user on a hash" do
+            expect(json_response[:email]).to eq("new@email.com")
+          end
         end
 
-        it "respond with http status 200" do
-          expect(response).to have_http_status(:ok)
-        end
+        context "when is not updated" do
+          before(:each) do
+            patch user_path(id: @user.id), {user: { email: "bademail.com" } }, @authentication_header
+          end
 
-        it "returns the updated user on a hash" do
-          expect(json_response[:email]).to eq("new@email.com")
+          it "respond with http status 422" do
+            expect(response).to have_http_status(:unprocessable_entity)
+          end
+
+          it "returns a json with errors" do
+            expect(json_response).to have_key(:errors)
+          end
+
+          it "returns why the user could not be updated" do
+            expect(json_response[:errors][:email]).to include("is invalid")
+          end
         end
       end
 
-      context "when is not updated" do
+      context "when is not own user" do
         before(:each) do
-          patch user_path(id: @user.id), {user: { email: "bademail.com" } }, @authentication_header
+          @another_user = FactoryGirl.create(:user, email: 'other@email.com')
+          patch user_path(id: @another_user.id), { user: { email: "new@email.com" } }, @authentication_header
         end
 
-        it "respond with http status 422" do
-          expect(response).to have_http_status(:unprocessable_entity)
-        end
-
-        it "returns a json with errors" do
-          expect(json_response).to have_key(:errors)
-        end
-
-        it "returns why the user could not be updated" do
-          expect(json_response[:errors][:email]).to include("is invalid")
+        it "respond with http status 401" do
+          expect(response).to have_http_status(:unauthorized)
         end
       end
     end
