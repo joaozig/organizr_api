@@ -39,6 +39,20 @@ class ItemsController < ApplicationController
 		end
   end
 
+  # DELETE /lists/:list_id/items/:id
+  def destroy
+  	item = Item.find(params[:id])
+  	if item.list.user != @authentication.current_user
+  		user_not_authorized
+  	else
+	  	if item.destroy
+	  		head :no_content
+	  	else
+	  		render json: { errors: "cannot delete list" }, status: :unprocessable_entity
+	  	end
+  	end
+  end
+
   private
 
 	def item_params

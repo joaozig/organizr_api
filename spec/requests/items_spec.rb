@@ -23,6 +23,13 @@ RSpec.describe "Items Requests", type: :request do
         expect(response).to have_http_status(:unauthorized)
       end
     end
+
+    describe "DELETE #destroy" do
+      it "responds with http status 401" do
+        delete list_item_path(list_id: 1, id: 1)
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
   end
 
   context "When signed in" do
@@ -164,6 +171,44 @@ RSpec.describe "Items Requests", type: :request do
 
             patch list_item_path(list_id: @another_list.id, id: @another_item.id),
               { item: @item_attributes }, @authentication_header
+          end
+
+          it "respond with http status 401" do
+            expect(response).to have_http_status(:unauthorized)
+          end
+
+          it "returns a json with errors" do
+            expect(json_response).to have_key(:errors)
+          end
+
+          it "returns Permission Denied error message" do
+            expect(json_response[:errors]).to include("Permission denied")
+          end
+        end
+      end
+    end
+
+    describe "DELETE #destroy" do
+      before(:each) do
+        @item = FactoryGirl.create(:item, list: @list)
+      end
+
+      context "when is successfully deleted" do
+        it "respond with http status 204" do
+          delete list_item_path(list_id: @list.id, id: @item.id), nil, @authentication_header
+          expect(response).to have_http_status(:no_content)
+        end
+      end
+
+      context "when is not deleted" do
+        context "because tried to delete an item from from another user's list" do
+          before(:each) do
+            @another_user = FactoryGirl.create(:user, email: "another@user.com")
+            @another_list = FactoryGirl.create(:list, user: @another_user)
+            @another_item = FactoryGirl.create(:item, list: @another_list)
+
+            delete list_item_path(list_id: @another_list.id, id: @another_item.id),
+              nil, @authentication_header
           end
 
           it "respond with http status 401" do
