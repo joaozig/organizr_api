@@ -1,5 +1,6 @@
 class ItemsController < ApplicationController
 	before_action :authenticate_with_token!
+	before_action :set_item, only: [:update, :destroy]
 
 	# GET /lists/:list_id/items
   def index
@@ -10,50 +11,45 @@ class ItemsController < ApplicationController
   # POST /lists/:list_id/items
   def create
   	list = List.find(params[:list_id])
+  	authorize list, :owner?
 
-  	if list.user != @authentication.current_user
-			user_not_authorized
+  	item = Item.new(item_params)
+  	item.list = list
+
+  	if item.save
+  		render json: item, status: :created
   	else
-	  	item = Item.new(item_params)
-	  	item.list = list
-
-	  	if item.save
-	  		render json: item, status: :created
-	  	else
-	  		render json: { errors: item.errors }, status: :unprocessable_entity
-	  	end
+  		render json: { errors: item.errors }, status: :unprocessable_entity
   	end
   end
 
   # PATCH/PUT /lists/:list_id/items/:id
   def update
-		item = Item.find(params[:id])
-		if item.list.user != @authentication.current_user
-			user_not_authorized
+		authorize @item, :update?
+
+		if @item.update(item_params)
+			render json: @item
 		else
-			if item.update(item_params)
-				render json: item
-			else
-				render json: { errors: item.errors }, status: :unprocessable_entity
-			end
+			render json: { errors: @item.errors }, status: :unprocessable_entity
 		end
   end
 
   # DELETE /lists/:list_id/items/:id
   def destroy
-  	item = Item.find(params[:id])
-  	if item.list.user != @authentication.current_user
-  		user_not_authorized
+  	authorize @item, :destroy?
+
+  	if @item.destroy
+  		head :no_content
   	else
-	  	if item.destroy
-	  		head :no_content
-	  	else
-	  		render json: { errors: "cannot delete list" }, status: :unprocessable_entity
-	  	end
+  		render json: { errors: "cannot delete item" }, status: :unprocessable_entity
   	end
   end
 
   private
+
+  def set_item
+  	@item = Item.find(params[:id])
+  end
 
 	def item_params
 		params.require(:item).permit(:title, :due_date)
