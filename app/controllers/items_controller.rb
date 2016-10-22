@@ -25,6 +25,20 @@ class ItemsController < ApplicationController
   	end
   end
 
+  # PATCH/PUT /lists/:list_id/items/:id
+  def update
+		item = Item.find(params[:id])
+		if item.list.user != @authentication.current_user
+			user_not_authorized
+		else
+			if item.update(item_params)
+				render json: item
+			else
+				render json: { errors: item.errors }, status: :unprocessable_entity
+			end
+		end
+  end
+
   private
 
 	def item_params

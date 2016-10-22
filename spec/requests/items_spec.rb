@@ -16,6 +16,13 @@ RSpec.describe "Items Requests", type: :request do
         expect(response).to have_http_status(:unauthorized)
       end
     end
+
+    describe "PATCH #update" do
+      it "responds with http status 401" do
+        patch list_item_path(list_id: 1, id: 1)
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
   end
 
   context "When signed in" do
@@ -90,6 +97,73 @@ RSpec.describe "Items Requests", type: :request do
             @another_list = FactoryGirl.create(:list, user: @another_user)
             @item_attributes = FactoryGirl.attributes_for :item
             post list_items_path(@another_list.id), { item: @item_attributes }, @authentication_header
+          end
+
+          it "respond with http status 401" do
+            expect(response).to have_http_status(:unauthorized)
+          end
+
+          it "returns a json with errors" do
+            expect(json_response).to have_key(:errors)
+          end
+
+          it "returns Permission Denied error message" do
+            expect(json_response[:errors]).to include("Permission denied")
+          end
+        end
+      end
+    end
+
+    describe "PATCH #update" do
+      before(:each) do
+        @item = FactoryGirl.create(:item, list: @list)
+      end
+
+      context "when is successfully updated" do
+        before(:each) do
+          patch list_item_path(list_id: @list.id, id: @item.id),
+            { item: { title: 'Updated title' } }, @authentication_header
+        end
+
+        it "respond with http status 200" do
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "returns the updated list on a hash" do
+          expect(json_response[:title]).to eq('Updated title')
+          expect(json_response[:list_id]).to eq(@list.id)
+        end
+      end
+
+      context "when is not updated" do
+        context "because validation failed" do
+          before(:each) do
+            patch list_item_path(list_id: @list.id, id: @item.id),
+              { item: { title: "" } }, @authentication_header
+          end
+
+          it "respond with http status 422" do
+            expect(response).to have_http_status(:unprocessable_entity)
+          end
+
+          it "returns a json with errors" do
+            expect(json_response).to have_key(:errors)
+          end
+
+          it "returns why the list could not be created" do
+            expect(json_response[:errors][:title]).to include("can't be blank")
+          end
+        end
+
+        context "because tried to update an item from from another user's list" do
+          before(:each) do
+            @another_user = FactoryGirl.create(:user, email: "another@user.com")
+            @another_list = FactoryGirl.create(:list, user: @another_user)
+            @another_item = FactoryGirl.create(:item, list: @another_list)
+            @item_attributes = FactoryGirl.attributes_for :item
+
+            patch list_item_path(list_id: @another_list.id, id: @another_item.id),
+              { item: @item_attributes }, @authentication_header
           end
 
           it "respond with http status 401" do
